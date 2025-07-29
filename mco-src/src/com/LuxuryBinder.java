@@ -42,16 +42,16 @@ public class LuxuryBinder extends Binders implements Sellable {
      *
      * @param price The custom price to be set for the binder.
      */
-    public void setCustomPrice(double price) {
-        double minPrice = 0;
-        // Calculate the total value of the cards in the binder
-        for (Cards c : this.getCard()) {
-            minPrice += c.getFinalValue();
-        }
+    public void setCustomPrice(double price){
+        double minPrice = getCardValue();
 
-        if (minPrice > price) {
-            customPrice = price * 1.10; // Multiply the custom price by 1.10 (10% increase) for sale value
-        } else {
+        if (minPrice < price){
+            if (Helper.confirmAction()) {
+                this.customPrice = price;
+                System.out.println("Binder price has been changed to "+ price);
+            }
+        }
+        else {
             System.out.println("Custom Price must be greater than the minimum price of the cards in the binder.");
         }
     }
@@ -63,16 +63,13 @@ public class LuxuryBinder extends Binders implements Sellable {
      *
      * @return The sale value of the binder.
      */
-    public double getSaleValue() {
-        if (customPrice != -1) {
-            return customPrice; // Return custom price if set
-        } else {
-            double totalValue = 0;
-            // Calculate the total value of the cards in the binder
-            for (Cards c : this.getCard()) {
-                totalValue += c.getFinalValue();
-            }
-            return totalValue * 1.10; // Multiply total value by 1.10 (10% increase)
+       public double getSaleValue(){
+        if (customPrice != -1){
+            return customPrice * 1.10;
+        }
+        else {
+            double totalValue = getCardValue();
+            return totalValue * 1.10;
         }
     }
 
@@ -80,12 +77,17 @@ public class LuxuryBinder extends Binders implements Sellable {
      * Sells the LuxuryBinder. Displays the binder's sale value and asks the user if they want to sell it.
      * If the user confirms, the sale value is added to the player's total money.
      */
-    @Override
-    public void sell() {
-        System.out.println(getName() + " has a value of " + getSaleValue());
-        System.out.print("Would you like to sell it? ");
-        if (Helper.confirmAction()) {
-            TCIS.addMoney(getSaleValue()); // Add the sale value to the player's money
+
+     public double getCardValue(){
+        double totalValue = 0;
+        for (Cards c : this.getCard()){
+            totalValue += c.getFinalValue();
         }
+        return totalValue;
+    }
+    
+    @Override
+     public void sell() {
+            TCIS.addMoney(getSaleValue());
     }
 }
